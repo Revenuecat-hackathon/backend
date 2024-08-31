@@ -1,1 +1,0 @@
-CREATE DATABASE subscription_db

@@ -1,7 +1,6 @@
 use anyhow::Result;
 
 use actix_web::{middleware::Logger, web, App, HttpServer};
-use migration::{Migrator, MigratorTrait};
 use redis::aio::MultiplexedConnection;
 use sea_orm::Database;
 use utils::app_state::AppState;
@@ -39,26 +38,17 @@ async fn main() -> Result<()> {
 
     let address = (utils::environment_variables::ADDRESS).clone();
     let port = (utils::environment_variables::PORT).clone();
-    let database_url = (utils::environment_variables::DATABASE_URL).clone();
 
     let redis_client = web::Data::new(RedisClient::new().expect("Failed to create Redis client"));
-    let db = Database::connect(database_url)
-        .await
-        .map_err(anyhow::Error::from)?;
-
-    Migrator::up(&db, None).await.map_err(anyhow::Error::from)?;
 
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(AppState {
-                db: db.clone(),
                 redis_client: redis_client.clone(),
             }))
             .wrap(Logger::default())
-            .configure(routes::home_routes::config)
             .configure(routes::auth_routes::config)
             .configure(routes::user_routes::config)
-            .configure(routes::post_routes::config)
     })
     .bind((address, port))
     .map_err(anyhow::Error::from)?

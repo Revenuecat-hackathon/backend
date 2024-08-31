@@ -3,14 +3,9 @@ name = "subscription_app"
 version = "0.1.0"
 edition = "2021"
 
-[workspace]
-members = [ ".", "entity", "migration" ]
-
 [dependencies]
 actix-web = "4.9.0"
 serde = { version = "1.0.208", features = ["derive"] }
-entity = { path = "entity" }
-migration = { path = "migration" }
 serde_json = "1.0.125"
 env_logger = "0.11.5"
 dotenv = "0.15.0"
@@ -19,8 +14,6 @@ sea-orm = { version = "1.0.0", features = ["sqlx-postgres", "runtime-tokio-rustl
 sha256 = "1.5.0"
 chrono = "0.4.38"
 jsonwebtoken = "9.3.0"
-sanitize-filename = "0.5.0"
-actix-multipart = "0.7.2"
 redis = { version = "0.26.1", features = ["tokio-comp"] }
 anyhow = "1.0.86"
 
