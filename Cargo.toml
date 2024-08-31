@@ -16,6 +16,7 @@ chrono = "0.4.38"
 jsonwebtoken = "9.3.0"
 redis = { version = "0.26.1", features = ["tokio-comp"] }
 anyhow = "1.0.86"
+tokio = { version = "1.40.0", features = ["full"] }
 
 [dependencies.uuid]
 version = "1.10.0"
