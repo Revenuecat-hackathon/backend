@@ -1,0 +1,28 @@
+ARG RUST_VERSION=1.76.0
+ARG APP_NAME=server
+
+FROM rust:${RUST_VERSION} AS dev
+
+# Use apt-get to update and install packages
+RUN apt-get update && apt-get install -y \
+    clang
+
+RUN cargo install cargo-watch
+
+RUN rustup component add rustfmt
+
+RUN curl -L https://github.com/rui314/mold/releases/download/v2.33.0/mold-2.33.0-x86_64-linux.tar.gz -o mold-2.33.0-x86_64-linux.tar.gz \
+    && tar -zxvf mold-2.33.0-x86_64-linux.tar.gz \
+    && cd mold-2.33.0-x86_64-linux \
+    && cp -r bin/* /usr/local/bin/ \
+    && cp -r lib/* /usr/local/lib/ \
+    && ldconfig
+
+WORKDIR /app
+
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+COPY entity ./entity
+COPY migration ./migration
+COPY .env ./
+COPY compose.yml ./

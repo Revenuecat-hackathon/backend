@@ -1,0 +1,5 @@
+/target
+/data
+/migration/target
+/public
+.env
