@@ -33,7 +33,7 @@ impl FromRequest for Claims {
 
     fn from_request(
         req: &actix_web::HttpRequest,
-        payload: &mut actix_web::dev::Payload,
+        _payload: &mut actix_web::dev::Payload,
     ) -> future::Ready<Result<Claims, actix_web::Error>> {
         match req.extensions().get::<Claims>() {
             Some(claim) => future::ready(Ok(claim.clone())),
