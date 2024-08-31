@@ -3,7 +3,7 @@ use actix_web::web;
 
 use super::{handlers, middlewares};
 
-// This in charge of every path in /user path
+// This is in charge of every path in /user path
 pub fn config(config: &mut web::ServiceConfig) {
     config.service(
         web::scope("/user")

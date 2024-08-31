@@ -1,6 +1,9 @@
+use std::sync::Arc;
+
 use anyhow::Result;
 
 use actix_web::{middleware::Logger, web, App, HttpServer};
+use aws_sdk_dynamodb::Client;
 use redis::aio::MultiplexedConnection;
 use utils::app_state::AppState;
 
@@ -40,14 +43,19 @@ async fn main() -> Result<()> {
 
     let redis_client = web::Data::new(RedisClient::new().expect("Failed to create Redis client"));
 
+    let shared_config = aws_config::load_from_env().await;
+    let dynamo_client = Arc::new(Client::new(&shared_config));
+
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(AppState {
                 redis_client: redis_client.clone(),
+                dynamo_client: Arc::clone(&dynamo_client),
             }))
             .wrap(Logger::default())
             .configure(routes::auth_routes::config)
             .configure(routes::user_routes::config)
+            .configure(routes::test_routes::config)
     })
     .bind((address, port))
     .map_err(anyhow::Error::from)?
