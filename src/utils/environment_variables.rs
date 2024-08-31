@@ -6,6 +6,7 @@ lazy_static! {
     pub static ref REDIS_URL: String = set_redis_url();
     pub static ref PORT: u16 = set_port();
     pub static ref SECRET: String = set_secret();
+    pub static ref ENVIRONMENT: String = set_environment();
 }
 
 fn set_address() -> String {
@@ -29,4 +30,9 @@ fn set_port() -> u16 {
 fn set_secret() -> String {
     dotenv::dotenv().ok();
     env::var("SECRET").unwrap_or("SECRET".to_string())
+}
+
+fn set_environment() -> String {
+    dotenv::dotenv().ok();
+    env::var("ENVIRONMENT").expect("ENVIRONMENT must be set")
 }
