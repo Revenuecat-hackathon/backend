@@ -1,6 +1,4 @@
 use actix_web::{get, post, web, Responder};
-use sea_orm::ActiveModelTrait;
-use sea_orm::{EntityTrait, IntoActiveModel, Set};
 
 use crate::utils::{
     api_response::{self, ApiResponse},

@@ -2,7 +2,6 @@ use anyhow::Result;
 
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use redis::aio::MultiplexedConnection;
-use sea_orm::Database;
 use utils::app_state::AppState;
 
 mod routes;

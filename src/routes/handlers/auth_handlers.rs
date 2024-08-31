@@ -4,7 +4,6 @@ use crate::utils::{
     jwt::{add_to_blacklist, encode_jwt},
 };
 use actix_web::{post, web, HttpRequest};
-use sea_orm::{ActiveModelTrait, ColumnTrait, Condition, EntityTrait, QueryFilter, Set};
 use sha256::digest;
 
 #[derive(serde::Deserialize)]
