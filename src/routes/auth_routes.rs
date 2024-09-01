@@ -8,7 +8,9 @@ pub fn config(config: &mut web::ServiceConfig) {
             .service(handlers::auth_handlers::register)
             .service(handlers::auth_handlers::login)
             .service(
-                web::scope("").wrap(from_fn(middlewares::auth_middleware::check_auth_middleware)), // .service(handlers::auth_handlers::logout),
+                web::scope("")
+                    .wrap(from_fn(middlewares::auth_middleware::check_auth_middleware))
+                    .service(handlers::auth_handlers::logout),
             ),
     );
 }
