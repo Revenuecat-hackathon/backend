@@ -14,6 +14,7 @@ env:
   ECS_SERVICE: artizans_webserver
   ECS_CLUSTER: artizans
   ECS_TASK_DEFINITION: aws/ecs-task-definition.json
+  IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   deploy:
@@ -23,16 +24,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-
-    - uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-cargo-
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -51,11 +42,10 @@ jobs:
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: latest
       run: |
         docker build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "image=${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
     - name: Replace placeholders in task definition
       env:
@@ -68,6 +58,7 @@ jobs:
         sed -i 's|${AWS_REGION}|'${{ env.AWS_REGION }}'|g' ${{ env.ECS_TASK_DEFINITION }}
         sed -i 's|${AWS_ACCOUNT_ID}|'${{ env.AWS_ACCOUNT_ID }}'|g' ${{ env.ECS_TASK_DEFINITION }}
         sed -i 's|${ECR_REGISTRY}|'${{ steps.login-ecr.outputs.registry }}'|g' ${{ env.ECS_TASK_DEFINITION }}
+        sed -i 's|${IMAGE_TAG}|'${{ env.IMAGE_TAG }}'|g' ${{ env.ECS_TASK_DEFINITION }}
         sed -i 's|${PORT}|'$PORT'|g' ${{ env.ECS_TASK_DEFINITION }}
         sed -i 's|${JWT_SECRET_KEY}|'$JWT_SECRET_KEY'|g' ${{ env.ECS_TASK_DEFINITION }}
         sed -i 's|${ADDRESS}|'$ADDRESS'|g' ${{ env.ECS_TASK_DEFINITION }}
