@@ -1,89 +1,133 @@
-// use crate::utils::{
-//     api_response::{self, ApiResponse},
-//     app_state,
-//     jwt::{add_to_blacklist, encode_jwt},
-// };
-// use actix_web::{post, web, HttpRequest};
-// use sha256::digest;
+use std::collections::HashMap;
+
+use crate::utils::{
+    api_response::{self, ApiResponse},
+    app_state::{self, AppState},
+    global_variables::DYNAMO_DB_TABLE_NAME,
+    jwt::{add_to_blacklist, encode_jwt},
+    models::User,
+};
+use actix_web::{post, web, HttpRequest};
+use anyhow::Result;
+use aws_sdk_dynamodb::types::AttributeValue;
+use sha256::digest;
 
 #[derive(serde::Deserialize)]
-struct RegisterModel {
+struct RegisterRequest {
     name: String,
     email: String,
     password: String,
 }
 
 #[derive(serde::Deserialize)]
-struct LoginModel {
+struct LoginRequest {
     email: String,
     password: String,
 }
 
-// #[post("/register")]
-// pub async fn register(
-//     app_state: web::Data<app_state::AppState>,
-//     register_json: web::Json<RegisterModel>,
-// ) -> Result<ApiResponse, ApiResponse> {
-//     let user_model = entity::user::ActiveModel {
-//         name: Set(register_json.name.clone()),
-//         email: Set(register_json.email.clone()),
-//         password: Set(digest(&register_json.password)),
-//         ..Default::default()
-//     }
-//     .insert(&app_state.db)
-//     .await
-//     .map_err(|err| ApiResponse::new(500, err.to_string()))?;
+#[post("/register")]
+pub async fn register(
+    app_state: web::Data<AppState>,
+    request: web::Json<RegisterRequest>,
+) -> Result<ApiResponse, ApiResponse> {
+    let mut item = HashMap::new();
+    item.insert(
+        "id".to_string(),
+        AttributeValue::S(format!("USER#{}", uuid::Uuid::new_v4())),
+    );
+    item.insert("name".to_string(), AttributeValue::S(request.name.clone()));
+    item.insert(
+        "email".to_string(),
+        AttributeValue::S(request.email.clone()),
+    );
+    item.insert(
+        "password".to_string(),
+        AttributeValue::S(digest(request.password.clone())),
+    );
 
-//     Ok(api_response::ApiResponse::new(
-//         200,
-//         format!("{}", user_model.id),
-//     ))
-// }
+    let table_name = DYNAMO_DB_TABLE_NAME.clone();
 
-// #[post("/login")]
-// pub async fn login(
-//     app_state: web::Data<app_state::AppState>,
-//     login_json: web::Json<LoginModel>,
-// ) -> Result<ApiResponse, ApiResponse> {
-//     let user_data = entity::user::Entity::find()
-//         .filter(
-//             Condition::all()
-//                 .add(entity::user::Column::Email.eq(login_json.email.clone()))
-//                 .add(entity::user::Column::Password.eq(digest(&login_json.password))),
-//         )
-//         .one(&app_state.db)
-//         .await
-//         .map_err(|err| ApiResponse::new(500, err.to_string()))?
-//         .ok_or(ApiResponse::new(404, "User not found".to_owned()))?;
+    app_state
+        .dynamo_client
+        .put_item()
+        .table_name(table_name)
+        .set_item(Some(item))
+        .send()
+        .await
+        .map_err(|err| ApiResponse::new(500, err.to_string()))?;
 
-//     let token = encode_jwt(user_data.email, user_data.id)
-//         .map_err(|err| ApiResponse::new(500, err.to_string()))?;
+    Ok(api_response::ApiResponse::new(
+        200,
+        format!("created user: {} - {}", request.name, request.email),
+    ))
+}
 
-//     Ok(api_response::ApiResponse::new(
-//         200,
-//         format!("{{'token': '{}'}}", token),
-//     ))
-// }
+#[post("/login")]
+pub async fn login(
+    app_state: web::Data<app_state::AppState>,
+    request: web::Json<LoginRequest>,
+) -> Result<ApiResponse, ApiResponse> {
+    println!("first");
+    let table_name = DYNAMO_DB_TABLE_NAME.clone();
 
-// #[post("/logout")]
-// async fn logout(
-//     app_state: web::Data<app_state::AppState>,
-//     req: HttpRequest,
-// ) -> Result<ApiResponse, ApiResponse> {
-//     if let Some(auth_header) = req.headers().get("Authorization") {
-//         if let Ok(auth_str) = auth_header.to_str() {
-//             if auth_str.starts_with("Bearer ") {
-//                 let token = auth_str.replace("Bearer ", "");
-//                 // Add token to blacklist with an expiry time of 24 hours
-//                 if let Err(e) = add_to_blacklist(&app_state.redis_client, &token).await {
-//                     return Err(ApiResponse::new(
-//                         500,
-//                         format!("Failed to blacklist token: {}", e),
-//                     ));
-//                 }
-//                 return Ok(ApiResponse::new(200, "Successfully logged out".to_string()));
-//             }
-//         }
-//     }
-//     Err(ApiResponse::new(400, "Invalid token".to_string()))
-// }
+    let result = app_state
+        .dynamo_client
+        .query()
+        .table_name(table_name)
+        .index_name("EmailIndex") // Assuming you've created a GSI named "EmailIndex"
+        .key_condition_expression("email = :email")
+        .expression_attribute_values(":email", AttributeValue::S(request.email.clone()))
+        .select(aws_sdk_dynamodb::types::Select::AllAttributes)
+        .send()
+        .await
+        .map_err(|err| {
+            ApiResponse::new(
+                500,
+                format!("DynamoDB query failed: {}. Error details: {:?}", err, err),
+            )
+        })?;
+
+    let user = result
+    .items
+    .and_then(|items| items.first().cloned())
+    .ok_or_else(|| ApiResponse::new(404, "User not found. Please check the email address.".to_string()))
+    .and_then(|item| {
+        User::from_item(&item).map_err(|err| {
+            ApiResponse::new(
+                500,
+                format!("Failed to parse user data: {}. This might be due to data corruption or schema mismatch.", err),
+            )
+        })
+    })?;
+
+    let token =
+        encode_jwt(user.email, user.id).map_err(|err| ApiResponse::new(500, err.to_string()))?;
+
+    Ok(api_response::ApiResponse::new(
+        200,
+        format!("{{'token': '{}'}}", token),
+    ))
+}
+
+#[post("/logout")]
+async fn logout(
+    app_state: web::Data<app_state::AppState>,
+    req: HttpRequest,
+) -> Result<ApiResponse, ApiResponse> {
+    if let Some(auth_header) = req.headers().get("Authorization") {
+        if let Ok(auth_str) = auth_header.to_str() {
+            if auth_str.starts_with("Bearer ") {
+                let token = auth_str.replace("Bearer ", "");
+                // Add token to blacklist with an expiry time of 24 hours
+                if let Err(e) = add_to_blacklist(&app_state.redis_client, &token).await {
+                    return Err(ApiResponse::new(
+                        500,
+                        format!("Failed to blacklist token: {}", e),
+                    ));
+                }
+                return Ok(ApiResponse::new(200, "Successfully logged out".to_string()));
+            }
+        }
+    }
+    Err(ApiResponse::new(400, "Invalid token".to_string()))
+}

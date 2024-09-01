@@ -23,7 +23,7 @@ pub struct Claims {
     pub exp: usize,
     pub iat: usize,
     pub email: String,
-    pub id: i32,
+    pub id: String,
 }
 
 impl FromRequest for Claims {
@@ -42,7 +42,7 @@ impl FromRequest for Claims {
     }
 }
 
-pub fn encode_jwt(email: String, id: i32) -> Result<String> {
+pub fn encode_jwt(email: String, id: String) -> Result<String> {
     let now = Utc::now();
     let expire = Duration::hours((super::global_variables::JWT_EXPIRY).clone());
 
