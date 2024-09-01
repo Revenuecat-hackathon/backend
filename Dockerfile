@@ -1,4 +1,4 @@
-FROM rust:1.80.1-slim-bullseye as builder
+FROM rust:1.80.1-bookworm as builder
 
 WORKDIR /usr/src/app
 
@@ -25,4 +25,4 @@ USER appuser
 
 EXPOSE 8080
 
-CMD ["./app"]
+CMD ["./subscription_app"]
