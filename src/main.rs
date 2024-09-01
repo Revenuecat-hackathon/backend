@@ -43,7 +43,7 @@ async fn main() -> Result<()> {
     let address = (utils::environment_variables::ADDRESS).clone();
     let port = (utils::environment_variables::PORT).clone();
 
-    let redis_client = web::Data::new(RedisClient::new().expect("Failed to create Redis client"));
+    //let redis_client = web::Data::new(RedisClient::new().expect("Failed to create Redis client"));
 
     println!("redis setup done");
 
@@ -56,7 +56,7 @@ async fn main() -> Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(AppState {
-                redis_client: redis_client.clone(),
+                //redis_client: redis_client.clone(),
                 dynamo_client: Arc::clone(&dynamo_client),
             }))
             .wrap(Logger::default())
