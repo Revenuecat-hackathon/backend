@@ -5,7 +5,7 @@ use aws_sdk_dynamodb::types::AttributeValue;
 use serde::{Deserialize, Serialize};
 
 use crate::utils::{
-    api_response::ApiResponse, app_state::AppState, environment_variables::DYNAMO_DB_TABLE_NAME,
+    api_response::ApiResponse, app_state::AppState, global_variables::DYNAMO_DB_TABLE_NAME,
 };
 
 #[derive(Debug, Serialize, Deserialize)]

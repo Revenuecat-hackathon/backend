@@ -44,21 +44,21 @@ pub async fn check_auth_middleware(
         .to_owned();
 
     // Check if token is blacklisted meaning user logged out already within past 24 hours
-    // match is_blacklisted(&app_state.redis_client, &token).await {
-    //     Ok(true) => {
-    //         return Err(Error::from(ApiResponse::new(
-    //             401,
-    //             "Token is invalid".to_string(),
-    //         )))
-    //     }
-    //     Ok(false) => {} // Token is not blacklisted, continue
-    //     Err(e) => {
-    //         return Err(Error::from(ApiResponse::new(
-    //             500,
-    //             format!("Failed to check token: {}", e),
-    //         )))
-    //     }
-    // }
+    match is_blacklisted(&app_state.redis_client, &token).await {
+        Ok(true) => {
+            return Err(Error::from(ApiResponse::new(
+                401,
+                "Token is invalid".to_string(),
+            )))
+        }
+        Ok(false) => {} // Token is not blacklisted, continue
+        Err(e) => {
+            return Err(Error::from(ApiResponse::new(
+                500,
+                format!("Failed to check token: {}", e),
+            )))
+        }
+    }
 
     let claim = decode_jwt(token).unwrap();
     req.extensions_mut().insert(claim.claims);

@@ -5,7 +5,7 @@ use anyhow::Result;
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use aws_sdk_dynamodb::Client;
 use redis::aio::MultiplexedConnection;
-use utils::app_state::AppState;
+use utils::{app_state::AppState, global_variables::DYNAMO_DB_TABLE_NAME};
 
 mod routes;
 mod utils;
@@ -43,18 +43,21 @@ async fn main() -> Result<()> {
     let address = (utils::environment_variables::ADDRESS).clone();
     let port = (utils::environment_variables::PORT).clone();
 
-    //let redis_client = web::Data::new(RedisClient::new().expect("Failed to create Redis client"));
+    let redis_client = web::Data::new(RedisClient::new().expect("Failed to create Redis client"));
 
     let shared_config = aws_config::load_from_env().await;
     let dynamo_client = Arc::new(Client::new(&shared_config));
 
     println!("dynamodb setup done");
+
+    let table_name = (DYNAMO_DB_TABLE_NAME).clone();
+    println!("DYNAMO_DB_TABLE_NAME: {table_name}");
     println!("about to fire up web server!");
 
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(AppState {
-                //redis_client: redis_client.clone(),
+                redis_client: redis_client.clone(),
                 dynamo_client: Arc::clone(&dynamo_client),
             }))
             .wrap(Logger::default())

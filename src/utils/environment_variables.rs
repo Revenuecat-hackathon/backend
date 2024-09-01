@@ -7,7 +7,6 @@ lazy_static! {
     pub static ref PORT: u16 = set_port();
     pub static ref JWT_SECRET_KEY: String = set_secret();
     pub static ref ENVIRONMENT: String = set_environment();
-    pub static ref DYNAMO_DB_TABLE_NAME: String = set_dynamo_db_table_name();
 }
 
 fn set_address() -> String {
@@ -36,9 +35,4 @@ fn set_secret() -> String {
 fn set_environment() -> String {
     dotenv::dotenv().ok();
     env::var("ENVIRONMENT").expect("ENVIRONMENT must be set")
-}
-
-fn set_dynamo_db_table_name() -> String {
-    dotenv::dotenv().ok();
-    env::var("DYNAMO_DB_TABLE_NAME").expect("DYNAMO_DB_TABLE_NAME must be set")
 }
