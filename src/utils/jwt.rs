@@ -53,7 +53,7 @@ pub fn encode_jwt(email: String, id: i32) -> Result<String> {
         id,
     };
 
-    let secret = (*environment_variables::SECRET).clone();
+    let secret = (*environment_variables::JWT_SECRET_KEY).clone();
 
     encode(
         &Header::default(),
@@ -64,7 +64,7 @@ pub fn encode_jwt(email: String, id: i32) -> Result<String> {
 }
 
 pub fn decode_jwt(jwt: String) -> Result<TokenData<Claims>> {
-    let secret = (*environment_variables::SECRET).clone();
+    let secret = (*environment_variables::JWT_SECRET_KEY).clone();
     let claim_data: Result<TokenData<Claims>> = decode(
         &jwt,
         &DecodingKey::from_secret(secret.as_ref()),
