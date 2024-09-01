@@ -2,7 +2,7 @@ name: Deploy to AWS ECR and ECS
 
 on:
   push:
-    branches: [ main ]
+    branches: [ FIXME ]
 
 env:
   JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}

@@ -45,8 +45,6 @@ async fn main() -> Result<()> {
 
     //let redis_client = web::Data::new(RedisClient::new().expect("Failed to create Redis client"));
 
-    println!("redis setup done");
-
     let shared_config = aws_config::load_from_env().await;
     let dynamo_client = Arc::new(Client::new(&shared_config));
 
