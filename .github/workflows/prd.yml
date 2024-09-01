@@ -13,7 +13,7 @@ env:
   ECR_REPOSITORY: artizans/webserver
   ECS_SERVICE: artizans_webserver
   ECS_CLUSTER: artizans
-  ECS_TASK_DEFINITION: aws/task-definition.json
+  ECS_TASK_DEFINITION: aws/ecs-task-definition.json
 
 jobs:
   deploy:
