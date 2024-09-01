@@ -9,7 +9,7 @@ COPY . .
 
 RUN cargo build --release
 
-FROM debian:bullseye-slim
+FROM rust:1.80.1-bookworm
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \

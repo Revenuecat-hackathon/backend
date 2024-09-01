@@ -35,16 +35,23 @@ async fn main() -> Result<()> {
         std::env::set_var("RUST_LOG", "actix_web=info");
     }
 
+    println!("about to init env");
     dotenv::dotenv().ok();
     env_logger::init();
 
+    println!("env initialized succesfully");
     let address = (utils::environment_variables::ADDRESS).clone();
     let port = (utils::environment_variables::PORT).clone();
 
     let redis_client = web::Data::new(RedisClient::new().expect("Failed to create Redis client"));
 
+    println!("redis setup done");
+
     let shared_config = aws_config::load_from_env().await;
     let dynamo_client = Arc::new(Client::new(&shared_config));
+
+    println!("dynamodb setup done");
+    println!("about to fire up web server!");
 
     HttpServer::new(move || {
         App::new()
