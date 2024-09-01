@@ -22,10 +22,10 @@ RUN useradd -ms /bin/bash appuser
 
 WORKDIR /app
 
-COPY --from=builder /usr/src/app/app/target/release/subscription_app .
+COPY --from=builder /usr/src/app/app/target/release/artizans_webserver .
 
 USER appuser
 
 EXPOSE 8080
 
-CMD ["./subscription_app"]
+CMD ["./artizans_webserver"]

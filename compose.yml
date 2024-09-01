@@ -1,16 +1,16 @@
 services:
 
-  subscription_redis:
+  artizans_redis:
     image: redis:latest
-    container_name: subscription_redis
+    container_name: artizans_redis
     ports:
       - "6379:6379"
     networks:
-      - subscription_network
+      - artizans_network
 
-  subscription_server:
+  artizans_webserver:
     platform: linux/amd64
-    container_name: subscription_server
+    container_name: artizans_webserver
     build:
       context: .
       dockerfile: Dockerfile.dev
@@ -22,19 +22,19 @@ services:
       - target:/app/target
     environment:
       RUST_LOG: "actix_web=info"
-      REDIS_URL: "redis://subscription_redis:6379"
+      REDIS_URL: "redis://artizans_redis:6379"
       ADDRESS: 0.0.0.0
       PORT: 8080
       ENVIRONMENT: "development"
     ports:
       - "8080:8080"
     depends_on:
-      - subscription_redis
+      - artizans_redis
     networks:
-      - subscription_network
+      - artizans_network
 
 networks:
-  subscription_network:
+  artizans_network:
 
 volumes:
   cargo-registry:

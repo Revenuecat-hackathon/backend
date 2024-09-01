@@ -26,7 +26,7 @@ aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --
 ```
 
 ```Shell
-docker buildx build --platform linux/amd64 -t subscription_app .
+docker buildx build --platform linux/amd64 -t artizans_webserver .
 
 docker images # check IMAGE ID of image you built before
 

@@ -314,6 +314,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "69f7f8c3906b62b754cd5326047894316021dcfe5a194c8ea52bdd94934a3457"
 
 [[package]]
+name = "artizans_webserver"
+version = "0.1.0"
+dependencies = [
+ "actix-web",
+ "anyhow",
+ "aws-config",
+ "aws-sdk-dynamodb",
+ "chrono",
+ "dotenv",
+ "env_logger",
+ "jsonwebtoken",
+ "lazy_static",
+ "redis",
+ "serde",
+ "serde_json",
+ "sha256",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "async-trait"
 version = "0.1.81"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1926,27 +1947,6 @@ name = "spin"
 version = "0.9.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
-
-[[package]]
-name = "subscription_app"
-version = "0.1.0"
-dependencies = [
- "actix-web",
- "anyhow",
- "aws-config",
- "aws-sdk-dynamodb",
- "chrono",
- "dotenv",
- "env_logger",
- "jsonwebtoken",
- "lazy_static",
- "redis",
- "serde",
- "serde_json",
- "sha256",
- "tokio",
- "uuid",
-]
 
 [[package]]
 name = "subtle"
