@@ -61,8 +61,8 @@ jobs:
       env:
         PORT: 8080
         ADDRESS: 0.0.0.0
-        DYNAMO_DB_TABLE_NAME: subscription_app_development
-        ENVIRONMENT: development
+        DYNAMO_DB_TABLE_NAME: subscription_app_production
+        ENVIRONMENT: production
         REDIS_URL: redis://subscription_redis:6379
       run: |
         sed -i 's|${AWS_REGION}|'${{ env.AWS_REGION }}'|g' ${{ env.ECS_TASK_DEFINITION }}
