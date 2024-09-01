@@ -23,7 +23,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    # enable caching rust's dependencies
+
     - uses: actions/cache@v4
       with:
         path: |
