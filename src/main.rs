@@ -61,7 +61,7 @@ async fn main() -> Result<()> {
             .wrap(Logger::default())
             .configure(routes::auth_routes::config)
             .configure(routes::user_routes::config)
-            .configure(routes::map_routes::config)
+            .configure(routes::index_routes::config)
     })
     .bind((address, port))
     .map_err(anyhow::Error::from)?
