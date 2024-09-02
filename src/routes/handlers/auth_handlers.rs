@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::utils::{
     api_response::{self, ApiResponse},
     app_state::{self, AppState},
-    auth::get_user_from_email,
+    user::get_user_from_email,
     global_variables::DYNAMO_DB_TABLE_NAME,
     jwt::{add_to_blacklist, encode_jwt},
     models::User,
