@@ -11,15 +11,16 @@ RUN cargo install cargo-watch
 
 RUN rustup component add rustfmt
 
-RUN curl -L https://github.com/rui314/mold/releases/download/v2.33.0/mold-2.33.0-x86_64-linux.tar.gz -o mold-2.33.0-x86_64-linux.tar.gz \
-    && tar -zxvf mold-2.33.0-x86_64-linux.tar.gz \
-    && cd mold-2.33.0-x86_64-linux \
+RUN curl -L https://github.com/rui314/mold/releases/download/v2.30.0/mold-2.30.0-x86_64-linux.tar.gz -o mold-2.30.0-x86_64-linux.tar.gz \
+    && tar -zxvf mold-2.30.0-x86_64-linux.tar.gz \
+    && cd mold-2.30.0-x86_64-linux \
     && cp -r bin/* /usr/local/bin/ \
     && cp -r lib/* /usr/local/lib/ \
     && ldconfig
 
 WORKDIR /app
 
+COPY .cargo/config.toml ./.cargo/config.toml
 COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 COPY .env ./

@@ -5,8 +5,8 @@ use crate::utils::{
     app_state::{self, AppState},
     global_variables::DYNAMO_DB_TABLE_NAME,
     jwt::{add_to_blacklist, encode_jwt},
-    models::User,
     user::get_user_from_email,
+    user::User,
 };
 use actix_web::{post, web, HttpRequest};
 use anyhow::Result;

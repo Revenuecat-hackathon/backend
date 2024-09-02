@@ -6,7 +6,7 @@ use crate::utils::{
     app_state,
     global_variables::DYNAMO_DB_TABLE_NAME,
     jwt::Claims,
-    models::User,
+    user::User,
 };
 
 #[derive(serde::Serialize, serde::Deserialize)]
