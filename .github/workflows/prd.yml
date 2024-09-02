@@ -2,7 +2,7 @@ name: Deploy to AWS ECR and ECS
 
 on:
   push:
-    branches: [ FIXME ]
+    branches: [ main ]
 
 env:
   JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
@@ -14,13 +14,13 @@ env:
   ECS_SERVICE: artizans_webserver
   ECS_CLUSTER: artizans
   ECS_TASK_DEFINITION: aws/ecs-task-definition.json
-  IMAGE_TAG: ${{ github.sha }}
+  IMAGE_TAG: latest
 
 jobs:
   deploy:
     name: Deploy to ECR and ECS
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -47,37 +47,37 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-    - name: Replace placeholders in task definition
-      env:
-        PORT: 8080
-        ADDRESS: 0.0.0.0
-        DYNAMO_DB_TABLE_NAME: artizans_production
-        ENVIRONMENT: production
-        REDIS_URL: redis://artizans_redis:6379
-      run: |
-        sed -i 's|${AWS_REGION}|'${{ env.AWS_REGION }}'|g' ${{ env.ECS_TASK_DEFINITION }}
-        sed -i 's|${AWS_ACCOUNT_ID}|'${{ env.AWS_ACCOUNT_ID }}'|g' ${{ env.ECS_TASK_DEFINITION }}
-        sed -i 's|${ECR_REGISTRY}|'${{ steps.login-ecr.outputs.registry }}'|g' ${{ env.ECS_TASK_DEFINITION }}
-        sed -i 's|${IMAGE_TAG}|'${{ env.IMAGE_TAG }}'|g' ${{ env.ECS_TASK_DEFINITION }}
-        sed -i 's|${PORT}|'$PORT'|g' ${{ env.ECS_TASK_DEFINITION }}
-        sed -i 's|${JWT_SECRET_KEY}|'$JWT_SECRET_KEY'|g' ${{ env.ECS_TASK_DEFINITION }}
-        sed -i 's|${ADDRESS}|'$ADDRESS'|g' ${{ env.ECS_TASK_DEFINITION }}
-        sed -i 's|${DYNAMO_DB_TABLE_NAME}|'$DYNAMO_DB_TABLE_NAME'|g' ${{ env.ECS_TASK_DEFINITION }}
-        sed -i 's|${ENVIRONMENT}|'$ENVIRONMENT'|g' ${{ env.ECS_TASK_DEFINITION }}
-        sed -i 's|${REDIS_URL}|'$REDIS_URL'|g' ${{ env.ECS_TASK_DEFINITION }}
+    # - name: Replace placeholders in task definition
+    #   env:
+    #     PORT: 8080
+    #     ADDRESS: 0.0.0.0
+    #     DYNAMO_DB_TABLE_NAME: artizans_production
+    #     ENVIRONMENT: production
+    #     REDIS_URL: redis://artizans_redis:6379
+    #   run: |
+    #     sed -i 's|${AWS_REGION}|'${{ env.AWS_REGION }}'|g' ${{ env.ECS_TASK_DEFINITION }}
+    #     sed -i 's|${AWS_ACCOUNT_ID}|'${{ env.AWS_ACCOUNT_ID }}'|g' ${{ env.ECS_TASK_DEFINITION }}
+    #     sed -i 's|${ECR_REGISTRY}|'${{ steps.login-ecr.outputs.registry }}'|g' ${{ env.ECS_TASK_DEFINITION }}
+    #     sed -i 's|${IMAGE_TAG}|'${{ env.IMAGE_TAG }}'|g' ${{ env.ECS_TASK_DEFINITION }}
+    #     sed -i 's|${PORT}|'$PORT'|g' ${{ env.ECS_TASK_DEFINITION }}
+    #     sed -i 's|${JWT_SECRET_KEY}|'$JWT_SECRET_KEY'|g' ${{ env.ECS_TASK_DEFINITION }}
+    #     sed -i 's|${ADDRESS}|'$ADDRESS'|g' ${{ env.ECS_TASK_DEFINITION }}
+    #     sed -i 's|${DYNAMO_DB_TABLE_NAME}|'$DYNAMO_DB_TABLE_NAME'|g' ${{ env.ECS_TASK_DEFINITION }}
+    #     sed -i 's|${ENVIRONMENT}|'$ENVIRONMENT'|g' ${{ env.ECS_TASK_DEFINITION }}
+    #     sed -i 's|${REDIS_URL}|'$REDIS_URL'|g' ${{ env.ECS_TASK_DEFINITION }}
 
-    - name: Fill in the new image ID in the Amazon ECS task definition
-      id: task-def
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: ${{ env.ECS_TASK_DEFINITION }}
-        container-name: webserver
-        image: ${{ steps.build-image.outputs.image }}
+    # - name: Fill in the new image ID in the Amazon ECS task definition
+    #   id: task-def
+    #   uses: aws-actions/amazon-ecs-render-task-definition@v1
+    #   with:
+    #     task-definition: ${{ env.ECS_TASK_DEFINITION }}
+    #     container-name: webserver
+    #     image: ${{ steps.build-image.outputs.image }}
 
-    - name: Deploy Amazon ECS task definition
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      with:
-        task-definition: ${{ steps.task-def.outputs.task-definition }}
-        service: ${{ env.ECS_SERVICE }}
-        cluster: ${{ env.ECS_CLUSTER }}
-        wait-for-service-stability: true
+    # - name: Deploy Amazon ECS task definition
+    #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+    #   with:
+    #     task-definition: ${{ steps.task-def.outputs.task-definition }}
+    #     service: ${{ env.ECS_SERVICE }}
+    #     cluster: ${{ env.ECS_CLUSTER }}
+    #     wait-for-service-stability: true
