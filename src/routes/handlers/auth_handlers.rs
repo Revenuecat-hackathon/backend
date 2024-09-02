@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::utils::{
     api_response::{self, ApiResponse},
     app_state::{self, AppState},
+    auth::get_user_from_email,
     global_variables::DYNAMO_DB_TABLE_NAME,
     jwt::{add_to_blacklist, encode_jwt},
     models::User,
@@ -30,7 +31,16 @@ pub async fn register(
     app_state: web::Data<AppState>,
     request: web::Json<RegisterRequest>,
 ) -> Result<ApiResponse, ApiResponse> {
+    let result = get_user_from_email(&app_state.dynamo_client, request.email.clone())
+        .await
+        .map_err(|err| ApiResponse::new(500, err.to_string()))?;
+
+    if let Some(_) = result.items.and_then(|items| items.first().cloned()) {
+        return Err(ApiResponse::new(409, "User already exists".to_string()));
+    }
+
     let mut item = HashMap::new();
+
     item.insert(
         "id".to_string(),
         AttributeValue::S(format!("USER#{}", uuid::Uuid::new_v4())),
@@ -68,24 +78,9 @@ pub async fn login(
     request: web::Json<LoginRequest>,
 ) -> Result<ApiResponse, ApiResponse> {
     println!("first");
-    let table_name = DYNAMO_DB_TABLE_NAME.clone();
-
-    let result = app_state
-        .dynamo_client
-        .query()
-        .table_name(table_name)
-        .index_name("EmailIndex") // Assuming you've created a GSI named "EmailIndex"
-        .key_condition_expression("email = :email")
-        .expression_attribute_values(":email", AttributeValue::S(request.email.clone()))
-        .select(aws_sdk_dynamodb::types::Select::AllAttributes)
-        .send()
+    let result = get_user_from_email(&app_state.dynamo_client, request.email.clone())
         .await
-        .map_err(|err| {
-            ApiResponse::new(
-                500,
-                format!("DynamoDB query failed: {}. Error details: {:?}", err, err),
-            )
-        })?;
+        .map_err(|err| ApiResponse::new(409, err.to_string()))?;
 
     let user = result
     .items
