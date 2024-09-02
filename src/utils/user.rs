@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use aws_sdk_dynamodb::{operation::query::QueryOutput, types::AttributeValue, Client};
 
-use super::{api_response::ApiResponse, global_variables::DYNAMO_DB_TABLE_NAME};
+use super::global_variables::DYNAMO_DB_TABLE_NAME;
 
 pub(crate) async fn get_user_from_email(
     dynamo_client: &Arc<Client>,

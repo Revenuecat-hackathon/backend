@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use crate::utils::{
     api_response::{self, ApiResponse},
     app_state::{self, AppState},
-    user::get_user_from_email,
     global_variables::DYNAMO_DB_TABLE_NAME,
     jwt::{add_to_blacklist, encode_jwt},
     models::User,
+    user::get_user_from_email,
 };
 use actix_web::{post, web, HttpRequest};
 use anyhow::Result;
@@ -23,6 +23,7 @@ struct RegisterRequest {
 #[derive(serde::Deserialize)]
 struct LoginRequest {
     email: String,
+    #[allow(dead_code)]
     password: String,
 }
 
@@ -77,7 +78,6 @@ pub async fn login(
     app_state: web::Data<app_state::AppState>,
     request: web::Json<LoginRequest>,
 ) -> Result<ApiResponse, ApiResponse> {
-    println!("first");
     let result = get_user_from_email(&app_state.dynamo_client, request.email.clone())
         .await
         .map_err(|err| ApiResponse::new(409, err.to_string()))?;

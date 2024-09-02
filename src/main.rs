@@ -5,7 +5,7 @@ use anyhow::Result;
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use aws_sdk_dynamodb::Client;
 use redis::aio::MultiplexedConnection;
-use utils::{app_state::AppState, global_variables::DYNAMO_DB_TABLE_NAME};
+use utils::app_state::AppState;
 
 mod routes;
 mod utils;
@@ -50,8 +50,6 @@ async fn main() -> Result<()> {
 
     println!("dynamodb setup done");
 
-    let table_name = (DYNAMO_DB_TABLE_NAME).clone();
-    println!("DYNAMO_DB_TABLE_NAME: {table_name}");
     println!("about to fire up web server!");
 
     HttpServer::new(move || {
@@ -63,6 +61,7 @@ async fn main() -> Result<()> {
             .wrap(Logger::default())
             .configure(routes::auth_routes::config)
             .configure(routes::user_routes::config)
+            .configure(routes::map_routes::config)
     })
     .bind((address, port))
     .map_err(anyhow::Error::from)?

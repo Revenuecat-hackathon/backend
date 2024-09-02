@@ -9,6 +9,7 @@ pub(crate) struct User {
     pub(crate) id: String,
     pub(crate) name: String,
     pub(crate) email: String,
+    #[allow(dead_code)]
     pub(crate) password: String,
 }
 

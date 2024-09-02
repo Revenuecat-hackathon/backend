@@ -1,6 +1,5 @@
-use actix_web::{get, post, web, Responder};
+use actix_web::{get, web};
 use aws_sdk_dynamodb::types::AttributeValue;
-use sha256::digest;
 
 use crate::utils::{
     api_response::{self, ApiResponse},
