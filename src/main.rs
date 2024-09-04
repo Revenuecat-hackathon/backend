@@ -6,6 +6,7 @@ use actix_web::{middleware::Logger, web, App, HttpServer};
 use aws_sdk_dynamodb::Client;
 use redis::aio::MultiplexedConnection;
 use utils::app_state::AppState;
+use aws_sdk_bedrockruntime as bedrock;
 
 mod routes;
 mod utils;
@@ -47,6 +48,7 @@ async fn main() -> Result<()> {
 
     let shared_config = aws_config::load_from_env().await;
     let dynamo_client = Arc::new(Client::new(&shared_config));
+    let bedrock_client = Arc::new(bedrock::Client::new(&shared_config));
 
     println!("[+] dynamodb setup done");
 
@@ -57,11 +59,13 @@ async fn main() -> Result<()> {
             .app_data(web::Data::new(AppState {
                 redis_client: redis_client.clone(),
                 dynamo_client: Arc::clone(&dynamo_client),
+                bedrock_client: Arc::clone(&bedrock_client),
             }))
             .wrap(Logger::default())
             .configure(routes::auth_routes::config)
             .configure(routes::user_routes::config)
             .configure(routes::index_routes::config)
+            .configure(routes::map_routes::config)
     })
     .bind((address, port))
     .map_err(anyhow::Error::from)?
