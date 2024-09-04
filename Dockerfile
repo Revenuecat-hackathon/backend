@@ -6,6 +6,9 @@ RUN USER=root mkdir app
 
 WORKDIR /usr/src/app/app
 
+RUN apt-get update && apt-get install -y \
+    clang
+
 COPY . .
 
 RUN cargo build --release
