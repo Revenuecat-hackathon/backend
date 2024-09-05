@@ -10,6 +10,7 @@ use aws_sdk_dynamodb::Client;
 use futures_util::future::LocalBoxFuture;
 use redis::aio::MultiplexedConnection;
 use utils::app_state::AppState;
+use utils::global_variables::SHUTDOWN_DURATION;
 
 mod routes;
 mod utils;
@@ -121,6 +122,8 @@ async fn main() -> Result<()> {
     let last_activity = Arc::new(LastActivityTime(Mutex::new(Instant::now())));
     let last_activity_clone = last_activity.clone();
 
+    let shutdown_duration = SHUTDOWN_DURATION.clone();
+
     let server = HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(AppState {
@@ -131,7 +134,7 @@ async fn main() -> Result<()> {
             .wrap(Logger::default())
             .wrap(InactivityMiddleware {
                 last_activity: last_activity_clone.clone(),
-                shutdown_duration: Duration::from_secs(300), // 5 minutes
+                shutdown_duration: Duration::from_secs(shutdown_duration as u64),
             })
             .configure(routes::auth_routes::config)
             .configure(routes::user_routes::config)
@@ -142,12 +145,11 @@ async fn main() -> Result<()> {
 
     let server_handle = server.run();
 
-    // Spawn a task to check for inactivity
     actix_web::rt::spawn(async move {
         loop {
             tokio::time::sleep(Duration::from_secs(60)).await;
             let last_activity = last_activity.0.lock().unwrap();
-            if last_activity.elapsed() > Duration::from_secs(300) {
+            if last_activity.elapsed() > Duration::from_secs(shutdown_duration as u64) {
                 println!("[-] No activity for 5 minutes. Shutting down.");
                 std::process::exit(0);
             }
