@@ -1,7 +1,10 @@
-# backend
+# NOT MAINTAINED
+We ended up using other architecture, so this repo is what used to be our backend. not anymore
+
+## backend
 Art gallery companion app's backend made by Artizans
 
-# start up
+## start up
 
 1. create .env first. refer to .env.example file as an example
 2. then run following commands
@@ -11,13 +14,13 @@ docker compose up --build -d
 docker compose logs -f
 ```
 
-# clean up when finished
+## clean up when finished
 
 ```Shell
 docker compose down
 ```
 
-# What we did to manually push container to ECR
+## What we did to manually push container to ECR
 
 only first try.
 
